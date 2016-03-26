@@ -41,19 +41,20 @@ public class control_robot extends AppCompatActivity {
         final Switch bt_test = (Switch) findViewById(R.id.switch_modeTest); //Switch pour passer en mode test
         Button btn_deco = (Button) findViewById(R.id.button_deco); //Button de déconnexion
         Button bt_avant = (Button) findViewById(R.id.bt_avant); //Button pour faire avancer le robot
-        Button bt_arrire = (Button) findViewById(R.id.bt_arrire); //Button pour faire reculer le robot
+        Button bt_arriere = (Button) findViewById(R.id.bt_arrire); //Button pour faire reculer le robot
+        Button bt_stop = (Button) findViewById(R.id.bt_stop); //Button pour arreter le robot
         final TextView value_progress = (TextView) findViewById(R.id.textView2); //Affichage de la vitesse
         SeekBar progress_value = (SeekBar) findViewById(R.id.seekBar); //Barre de progression de la vitesse
         new ConnectBT().execute(); //Connection du bluetooth
         bt_test.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(bt_test.isChecked()) {
+                if (bt_test.isChecked()) {
                     findViewById(R.id.textView).setEnabled(true);
                     findViewById(R.id.textView).setVisibility(View.VISIBLE);
                     terminal.setEnabled(true);
                     terminal.setVisibility(View.VISIBLE);
-                }else {
+                } else {
                     findViewById(R.id.textView).setEnabled(false);
                     findViewById(R.id.textView).setVisibility(View.INVISIBLE);
                     terminal.setEnabled(false);
@@ -95,19 +96,37 @@ public class control_robot extends AppCompatActivity {
                 }
             }
         });
+        bt_arriere.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                if(vitesse < 100 && vitesse >= 10){
+                    send_msg_bt("1m20" + vitesse);
+                }else if(vitesse < 10){
+                    send_msg_bt("1m200" + vitesse);
+                }else {
+                    send_msg_bt("2m1" + vitesse);
+                }
+            }
+        });
+        bt_stop.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                if(vitesse < 100 && vitesse >= 10){
+                    send_msg_bt("1m00" + vitesse);
+                }else if(vitesse < 10){
+                    send_msg_bt("1m000" + vitesse);
+                }else {
+                    send_msg_bt("1m0" + vitesse);
+                }
+            }
+        });
         terminal.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_ENTER) {
                     if (event.getAction() == KeyEvent.ACTION_UP) {
                         String ordre_txt = terminal.getText().toString();
-                        if(ordre_txt == "On"){
-                            value_ordre = "191";
-                        }else if(ordre_txt == "Stop"){
-                            value_ordre = "190";
-                        }else{
-                            value_ordre =  ordre_txt;
-                        }
+                        value_ordre =  ordre_txt;
                         send_msg_bt(value_ordre);
                         txt_term.setText("$: " + value_ordre.getBytes());
                         terminal.setText("");

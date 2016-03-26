@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -14,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,35 +21,46 @@ import java.io.IOException;
 import java.util.UUID;
 
 public class control_robot extends AppCompatActivity {
-    EditText terminal;
-    TextView txt_term;
-    Button btn_deco;
-    Button bt_avant;
-    Button bt_arriere;
-    SeekBar progress_value;
     String value_ordre;
     int vitesse;
     String address_device = null;
     BluetoothAdapter myBluetooth = null;
-    TextView value_progress;
     private ProgressDialog progress;
     private boolean isBtConnected = false;
     BluetoothSocket btSocket = null;
-    Handler myHandler = new Handler();
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control_robot);
         Intent newint = getIntent();
         address_device = newint.getStringExtra(Choix_Bluetooth.EXTRA_ADDRESS); //addresse bluetooth
-        terminal = (EditText) findViewById(R.id.editText);
-        txt_term = (TextView) findViewById(R.id.text_command);
-        btn_deco = (Button) findViewById(R.id.button_deco);
-        bt_avant = (Button) findViewById(R.id.bt_avant);
-        value_progress = (TextView) findViewById(R.id.textView2);
-        progress_value = (SeekBar) findViewById(R.id.seekBar);
-        new ConnectBT().execute();
+        final EditText terminal = (EditText) findViewById(R.id.input_msg_test); //Mini console du mode test pour l'envoie de msg spécifique
+        final TextView txt_term = (TextView) findViewById(R.id.text_command); //Texte coder de la console
+        final Switch bt_test = (Switch) findViewById(R.id.switch_modeTest); //Switch pour passer en mode test
+        Button btn_deco = (Button) findViewById(R.id.button_deco); //Button de déconnexion
+        Button bt_avant = (Button) findViewById(R.id.bt_avant); //Button pour faire avancer le robot
+        Button bt_arrire = (Button) findViewById(R.id.bt_arrire); //Button pour faire reculer le robot
+        final TextView value_progress = (TextView) findViewById(R.id.textView2); //Affichage de la vitesse
+        SeekBar progress_value = (SeekBar) findViewById(R.id.seekBar); //Barre de progression de la vitesse
+        new ConnectBT().execute(); //Connection du bluetooth
+        bt_test.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(bt_test.isChecked()) {
+                    findViewById(R.id.textView).setEnabled(true);
+                    findViewById(R.id.textView).setVisibility(View.VISIBLE);
+                    terminal.setEnabled(true);
+                    terminal.setVisibility(View.VISIBLE);
+                }else {
+                    findViewById(R.id.textView).setEnabled(false);
+                    findViewById(R.id.textView).setVisibility(View.INVISIBLE);
+                    terminal.setEnabled(false);
+                    terminal.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
         progress_value.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -63,7 +74,7 @@ public class control_robot extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                vitesse = seekBar.getProgress();
             }
         });
         btn_deco.setOnClickListener(new View.OnClickListener() {
@@ -75,7 +86,13 @@ public class control_robot extends AppCompatActivity {
         bt_avant.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                send_msg_bt("1m1" + vitesse);
+                if(vitesse < 100 && vitesse >= 10){
+                    send_msg_bt("1m10" + vitesse);
+                }else if(vitesse < 10){
+                    send_msg_bt("1m100" + vitesse);
+                }else {
+                    send_msg_bt("1m1" + vitesse);
+                }
             }
         });
         terminal.setOnKeyListener(new View.OnKeyListener() {
@@ -123,7 +140,7 @@ public class control_robot extends AppCompatActivity {
                 msg(msg);
             }
             catch (IOException e)
-            { msg("Error");}
+            { msg("Error, message : " + msg);}
         }
     }
     private void msg(String s)
@@ -168,7 +185,7 @@ public class control_robot extends AppCompatActivity {
             if (!ConnectSuccess)
             {
                 msg("La connexion a échoué. Est-ce un Bluetooth SPP? Réessayer.");
-                finish();
+                //finish();
             }
             else
             {

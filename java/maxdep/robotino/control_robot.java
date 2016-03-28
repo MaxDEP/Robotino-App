@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -28,6 +29,7 @@ public class control_robot extends AppCompatActivity {
     private ProgressDialog progress;
     private boolean isBtConnected = false;
     BluetoothSocket btSocket = null;
+    Handler myHandler = new Handler();
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     @Override
@@ -50,13 +52,13 @@ public class control_robot extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (bt_test.isChecked()) {
-                    findViewById(R.id.textView).setEnabled(true);
-                    findViewById(R.id.textView).setVisibility(View.VISIBLE);
+                    findViewById(R.id.txt_input).setEnabled(true);
+                    findViewById(R.id.txt_input).setVisibility(View.VISIBLE);
                     terminal.setEnabled(true);
                     terminal.setVisibility(View.VISIBLE);
                 } else {
-                    findViewById(R.id.textView).setEnabled(false);
-                    findViewById(R.id.textView).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.txt_input).setEnabled(false);
+                    findViewById(R.id.txt_input).setVisibility(View.INVISIBLE);
                     terminal.setEnabled(false);
                     terminal.setVisibility(View.INVISIBLE);
                 }
@@ -87,37 +89,20 @@ public class control_robot extends AppCompatActivity {
         bt_avant.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                if(vitesse < 100 && vitesse >= 10){
-                    send_msg_bt("1m10" + vitesse);
-                }else if(vitesse < 10){
-                    send_msg_bt("1m100" + vitesse);
-                }else {
-                    send_msg_bt("1m1" + vitesse);
-                }
+                myHandler.postDelayed(motor_2, 0);
             }
         });
         bt_arriere.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                if(vitesse < 100 && vitesse >= 10){
-                    send_msg_bt("1m20" + vitesse);
-                }else if(vitesse < 10){
-                    send_msg_bt("1m200" + vitesse);
-                }else {
-                    send_msg_bt("2m1" + vitesse);
-                }
+                myHandler.postDelayed(motor_1, 0);
+                myHandler.postDelayed(motor_2, 2000);
             }
         });
         bt_stop.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                if(vitesse < 100 && vitesse >= 10){
-                    send_msg_bt("1m00" + vitesse);
-                }else if(vitesse < 10){
-                    send_msg_bt("1m000" + vitesse);
-                }else {
-                    send_msg_bt("1m0" + vitesse);
-                }
+                send_msg_bt("1m0000" + vitesse);
             }
         });
         terminal.setOnKeyListener(new View.OnKeyListener() {
@@ -138,6 +123,33 @@ public class control_robot extends AppCompatActivity {
             }
         });
     }
+    private Runnable motor_1 = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            if(vitesse < 100 && vitesse >= 10){
+                send_msg_bt("1m10" + vitesse);
+            }else if(vitesse < 10){
+                send_msg_bt("1m100" + vitesse);
+            }else {
+                send_msg_bt("1m1" + vitesse);
+            }
+        }
+    };
+    private Runnable motor_2 = new Runnable()
+    {
+        @Override
+        public void run() {
+            if(vitesse < 100 && vitesse >= 10){
+                send_msg_bt("1m20" + vitesse);
+            }else if(vitesse < 10){
+                send_msg_bt("1m200" + vitesse);
+            }else {
+                send_msg_bt("1m2" + vitesse);
+            }
+        }
+    };
     private void Disconnect()
     {
         if (btSocket!=null) {

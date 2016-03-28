@@ -44,6 +44,8 @@ public class control_robot extends AppCompatActivity {
         Button btn_deco = (Button) findViewById(R.id.button_deco); //Button de déconnexion
         Button bt_avant = (Button) findViewById(R.id.bt_avant); //Button pour faire avancer le robot
         Button bt_arriere = (Button) findViewById(R.id.bt_arrire); //Button pour faire reculer le robot
+        Button bt_gauche = (Button) findViewById(R.id.bt_gauche); //Button pour tourner à gauche
+        Button bt_droite = (Button) findViewById(R.id.bt_droite); //Button pour tourner à droite
         Button bt_stop = (Button) findViewById(R.id.bt_stop); //Button pour arreter le robot
         final TextView value_progress = (TextView) findViewById(R.id.textView2); //Affichage de la vitesse
         SeekBar progress_value = (SeekBar) findViewById(R.id.seekBar); //Barre de progression de la vitesse
@@ -52,6 +54,8 @@ public class control_robot extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (bt_test.isChecked()) {
+                    send_msg_bt("1m0000");
+                    vitesse = 0;
                     findViewById(R.id.txt_input).setEnabled(true);
                     findViewById(R.id.txt_input).setVisibility(View.VISIBLE);
                     terminal.setEnabled(true);
@@ -99,10 +103,24 @@ public class control_robot extends AppCompatActivity {
                 myHandler.postDelayed(motor_2, 2000);
             }
         });
+        bt_gauche.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myHandler.postDelayed(motor_1, 0);
+                myHandler.postDelayed(motor_2, 3000);
+            }
+        });
+        bt_droite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myHandler.postDelayed(motor_1, 0);
+                myHandler.postDelayed(motor_2, 1000);
+            }
+        });
         bt_stop.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                send_msg_bt("1m0000" + vitesse);
+                send_msg_bt("1m0000");
             }
         });
         terminal.setOnKeyListener(new View.OnKeyListener() {
